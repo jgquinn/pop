@@ -30,6 +30,13 @@ func ColumnsForStructWithAlias(s interface{}, tableName string, tableAlias strin
 		}
 	}
 
+	addColumnsForStruct(st, &columns)
+
+	return columns
+}
+
+func addColumnsForStruct(st reflect.Type, columns *Columns) {
+
 	fieldCount := st.NumField()
 
 	for i := 0; i < fieldCount; i++ {
@@ -39,24 +46,27 @@ func ColumnsForStructWithAlias(s interface{}, tableName string, tableAlias strin
 		tag := popTags.Find("db")
 
 		if !tag.Ignored() && !tag.Empty() {
-			col := tag.Value
 
-			//add writable or readable.
-			tag := popTags.Find("rw")
-			if !tag.Empty() {
-				col = col + "," + tag.Value
-			}
+			if field.Anonymous {
+				addColumnsForStruct(field.Type, columns)
+			} else {
+				col := tag.Value
 
-			cs := columns.Add(col)
+				//add writable or readable.
+				tag := popTags.Find("rw")
+				if !tag.Empty() {
+					col = col + "," + tag.Value
+				}
 
-			//add select clause.
-			tag = popTags.Find("select")
-			if !tag.Empty() {
-				c := cs[0]
-				c.SetSelectSQL(tag.Value)
+				cs := columns.Add(col)
+
+				//add select clause.
+				tag = popTags.Find("select")
+				if !tag.Empty() {
+					c := cs[0]
+					c.SetSelectSQL(tag.Value)
+				}
 			}
 		}
 	}
-
-	return columns
 }
