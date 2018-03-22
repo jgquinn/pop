@@ -38,6 +38,7 @@ func ColumnsForStructWithAlias(s interface{}, tableName string, tableAlias strin
 func addColumnsForStruct(st reflect.Type, columns *Columns) {
 
 	fieldCount := st.NumField()
+	var anonTypes []reflect.Type
 
 	for i := 0; i < fieldCount; i++ {
 		field := st.Field(i)
@@ -48,25 +49,32 @@ func addColumnsForStruct(st reflect.Type, columns *Columns) {
 		if !tag.Ignored() && !tag.Empty() {
 
 			if field.Anonymous {
-				addColumnsForStruct(field.Type, columns)
+				anonTypes = append(anonTypes, field.Type)
 			} else {
 				col := tag.Value
+				_, found := columns.Cols[col]
+				// only process fields that have not already been configured a column
+				if !found {
+					//add writable or readable.
+					tag := popTags.Find("rw")
+					if !tag.Empty() {
+						col = col + "," + tag.Value
+					}
 
-				//add writable or readable.
-				tag := popTags.Find("rw")
-				if !tag.Empty() {
-					col = col + "," + tag.Value
-				}
+					cs := columns.Add(col)
 
-				cs := columns.Add(col)
-
-				//add select clause.
-				tag = popTags.Find("select")
-				if !tag.Empty() {
-					c := cs[0]
-					c.SetSelectSQL(tag.Value)
+					//add select clause.
+					tag = popTags.Find("select")
+					if !tag.Empty() {
+						c := cs[0]
+						c.SetSelectSQL(tag.Value)
+					}
 				}
 			}
 		}
+	}
+
+	for _, anonType := range anonTypes {
+		addColumnsForStruct(anonType, columns)
 	}
 }
