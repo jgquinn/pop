@@ -88,6 +88,12 @@ func (c *Columns) Add(names ...string) []*Column {
 	return ret
 }
 
+func (c *Columns) HasCol(name string) bool {
+	target := fmt.Sprintf("%s.%s", c.TableAlias, name)
+	_, found := c.Cols[target]
+	return found
+}
+
 // Remove a column from the list.
 func (c *Columns) Remove(names ...string) {
 	for _, name := range names {

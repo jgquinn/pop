@@ -2,6 +2,7 @@ package columns
 
 import (
 	"reflect"
+	"strings"
 )
 
 // ColumnsForStruct returns a Columns instance for
@@ -51,10 +52,8 @@ func addColumnsForStruct(st reflect.Type, columns *Columns) {
 			if field.Anonymous {
 				anonTypes = append(anonTypes, field.Type)
 			} else {
-				col := tag.Value
-				_, found := columns.Cols[col]
-				// only process fields that have not already been configured a column
-				if !found {
+				col := strings.ToLower(tag.Value)
+				if !columns.HasCol(col) {
 					//add writable or readable.
 					tag := popTags.Find("rw")
 					if !tag.Empty() {
