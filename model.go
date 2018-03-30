@@ -30,7 +30,10 @@ type Model struct {
 func (m *Model) ID() interface{} {
 	fbn, err := m.fieldByName("ID")
 	if err != nil {
-		return 0
+		fbn, err = m.fieldByName("Id")
+		if err != nil {
+			return 0
+		}
 	}
 	if m.PrimaryKeyType() == "UUID" {
 		return fbn.Interface().(uuid.UUID).String()
@@ -42,7 +45,10 @@ func (m *Model) ID() interface{} {
 func (m *Model) PrimaryKeyType() string {
 	fbn, err := m.fieldByName("ID")
 	if err != nil {
-		return "int"
+		fbn, err = m.fieldByName("Id")
+		if err != nil {
+			return "int"
+		}
 	}
 	return fbn.Type().Name()
 }
@@ -126,6 +132,9 @@ func (m *Model) associationName() string {
 
 func (m *Model) setID(i interface{}) {
 	fbn, err := m.fieldByName("ID")
+	if err != nil {
+		fbn, err = m.fieldByName("Id")
+	}
 	if err == nil {
 		v := reflect.ValueOf(i)
 		switch fbn.Kind() {
