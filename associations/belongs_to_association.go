@@ -24,7 +24,10 @@ func belongsToAssociationBuilder(p associationParams) (Association, error) {
 	ownerIDField := fmt.Sprintf("%s%s", p.field.Name, "ID")
 
 	if _, found := p.modelType.FieldByName(ownerIDField); !found {
-		return nil, fmt.Errorf("there is no '%s' defined in model '%s'", ownerIDField, p.modelType.Name())
+		ownerIDField = fmt.Sprintf("%s%s", p.field.Name, "Id")
+		if _, found := p.modelType.FieldByName(ownerIDField); !found {
+			return nil, fmt.Errorf("there is no belongs_to key field for '%s' defined in model '%s'", p.field.Name, p.modelType.Name())
+		}
 	}
 
 	// Validates if ownerIDField is nil, this association will be skipped.
