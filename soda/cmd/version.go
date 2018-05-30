@@ -1,3 +1,4 @@
 package cmd
 
-const Version = "v4.3.0"
+// Version defines the current Pop version.
+const Version = "v4.5.9"
